@@ -7,4 +7,5 @@ var CommentSchema = new mongoose.Schema({
   post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }
 });
 
-mongoose.model('Comments', CommentSchema);
+mongoose.model('Comment', CommentSchema);
+
