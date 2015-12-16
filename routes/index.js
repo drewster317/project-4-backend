@@ -18,6 +18,7 @@ router.get('/posts', function(req, res, next) {
   });
 });
 
+
 router.post('/posts', function(req, res, next) {
   var post = new Post(req.body);
 
@@ -33,12 +34,28 @@ router.param('post', function(req, res, next, id) {
 
   query.exec(function (err, post){
     if (err) { return next(err); }
-    if (!post) { return next(new Error('can\'t find post')); }
+    if (!comment) { return next(new Error('can\'t find post')); }
 
-    req.post = post;
+    req.comment = comment;
     return next();
   });
 });
+
+//preload comment objects on routes with ':comment'
+
+router.param('comment', function(req, res, next, id) {
+  var query = Comment.findById(id);
+
+  query.exec(function (err, comment){
+    if (err) { return next(err); }
+    if (!comment) { return next(new Error('can\'t find comment')); }
+
+    req.comment = comment;
+    return next();
+  });
+});
+
+//return a post
 
 router.get('/posts/:post', function(req, res) {
   req.post.populate('comments', function(err,post) {
@@ -46,6 +63,7 @@ router.get('/posts/:post', function(req, res) {
   });
 });
 
+//upvote post
 router.put('/posts/:post/upvote', function(req, res, next) {
   req.post.upvote(function(err, post){
     if (err) { return next(err); }
@@ -54,15 +72,12 @@ router.put('/posts/:post/upvote', function(req, res, next) {
   });
 });
 
-router.put('/posts/:post/comments/:comment/upvote', function(req,res,next) {
-  req.comment.upvote(function(err,comment) {
-    if (err) { return next(err); }
-  });
-});
+//create a comment
 
-router.post('/posts/:post/comments', function(req, res, next) {
+router.post('/posts/:post/comments', auth, function(req, res, next) {
   var comment = new Comment(req.body);
   comment.post = req.post;
+  comment.author = req.payload.username;
 
   comment.save(function(err, comment){
     if(err){ return next(err); }
@@ -73,6 +88,16 @@ router.post('/posts/:post/comments', function(req, res, next) {
 
       res.json(comment);
     });
+  });
+});
+
+//upvote a comment
+
+router.put('/posts/:post/comments/:comment/upvote', function(req, res, next) {
+  req.comment.upvote(function(err, comment){
+    if (err) { return next(err); }
+
+    res.json(comment);
   });
 });
 

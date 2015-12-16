@@ -36,6 +36,7 @@ app.factory('posts', ['$http', function($http){
   var o = {
     posts: []
   };
+
   o.getAll = function() {
     return $http.get('/posts').success(function(data){
       angular.copy(data, o.posts);
@@ -65,10 +66,11 @@ app.factory('posts', ['$http', function($http){
     return $http.post('/posts/' + id + '/comments', comment);
   };
 
-  o.upvoteComment = function(post, comment) {
-    return $http.put('/posts/' + post._id + '/comments/' + comment._id + '/upvote').success(function(data) {
-      comment.upvotes += 1;
-    })
+  o.upvoteComment = function (post, comment) {
+    return $http.put('/posts/' + post._id + '/comments/' + comment._id + '/upvote')
+    .success(function (data) {
+      comment.votes += 1;
+    });
   };
 
   return o;
@@ -79,7 +81,7 @@ app.controller('MainCtrl', [
   '$scope',
   'posts',
   function($scope, posts){
-    $scope.test = 'Hello world!';
+    $scope.test = 'Poop!';
 
     $scope.posts = posts.posts;
 
@@ -116,13 +118,11 @@ app.controller('PostsCtrl', [
         $scope.post.comments.push(comment);
       });
       $scope.body = '';
-    }
+    };
 
     $scope.incrementUpvotes = function(comment) {
       posts.upvoteComment(post, comment);
-    }
-
-
+    };
 
   }]);
 
