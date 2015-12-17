@@ -32,6 +32,45 @@ app.config([
   }])
 
 
+.factory('auth', ['$http', '$window', function($http, $window) {
+var auth = {};
+
+auth.saveToken = function(token) {
+  $window.localStorage['dreadit-token'] = token;
+}
+
+auth.getToken = function() {
+  return $window.localStorage['dreadit-token'];
+}
+
+auth.isLoggedIn = function() {
+  var token = auth.getToken();
+
+  if (token) {
+    var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+    return payload.exp > Date.now() / 1000;
+  } else {
+    return false;
+  }
+};
+
+auth.currentUser = function(){
+  if(auth.isLoggedIn()){
+    var token = auth.getToken();
+    var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+    return payload.username;
+  }
+};
+
+return auth;
+}])
+
+
+
+
+
 app.factory('posts', ['$http', function($http){
   var o = {
     posts: []
