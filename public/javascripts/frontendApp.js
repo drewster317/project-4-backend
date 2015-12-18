@@ -28,25 +28,26 @@ app.config([
     })
 
     .state('login', {
-  url: '/login',
-  templateUrl: '/login.html',
-  controller: 'AuthCtrl',
-  onEnter: ['$state', 'auth', function($state, auth){
-    if(auth.isLoggedIn()){
-      $state.go('home');
-    }
-  }]
-})
-.state('register', {
-  url: '/register',
-  templateUrl: '/register.html',
-  controller: 'AuthCtrl',
-  onEnter: ['$state', 'auth', function($state, auth){
-    if(auth.isLoggedIn()){
-      $state.go('home');
-    }
-  }]
-});
+      url: '/login',
+      templateUrl: '/login.html',
+      controller: 'AuthCtrl',
+      onEnter: ['$state', 'auth', function($state, auth){
+        if(auth.isLoggedIn()){
+          $state.go('home');
+        }
+      }]
+    })
+
+    .state('register', {
+      url: '/register',
+      templateUrl: '/register.html',
+      controller: 'AuthCtrl',
+      onEnter: ['$state', 'auth', function($state, auth){
+        if(auth.isLoggedIn()){
+          $state.go('home');
+        }
+      }]
+    });
 
     $urlRouterProvider.otherwise('home');
 
@@ -54,94 +55,94 @@ app.config([
 
 
 .factory('auth', ['$http', '$window', function($http, $window) {
-var auth = {};
+  var auth = {};
 
-auth.saveToken = function(token) {
-  $window.localStorage['dreadit-token'] = token;
-}
-
-auth.getToken = function() {
-  return $window.localStorage['dreadit-token'];
-}
-
-auth.isLoggedIn = function() {
-  var token = auth.getToken();
-
-  if (token) {
-    var payload = JSON.parse($window.atob(token.split('.')[1]));
-
-    return payload.exp > Date.now() / 1000;
-  } else {
-    return false;
+  auth.saveToken = function(token) {
+    $window.localStorage['dreadit-token'] = token;
   }
-};
 
-auth.currentUser = function(){
-  if(auth.isLoggedIn()){
+  auth.getToken = function() {
+    return $window.localStorage['dreadit-token'];
+  }
+
+  auth.isLoggedIn = function() {
     var token = auth.getToken();
-    var payload = JSON.parse($window.atob(token.split('.')[1]));
 
-    return payload.username;
-  }
-};
+    if (token) {
+      var payload = JSON.parse($window.atob(token.split('.')[1]));
 
-auth.register = function(user){
-  return $http.post('/register', user).success(function(data){
-    auth.saveToken(data.token);
-  });
-};
+      return payload.exp > Date.now() / 1000;
+    } else {
+      return false;
+    }
+  };
+
+  auth.currentUser = function(){
+    if(auth.isLoggedIn()){
+      var token = auth.getToken();
+      var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+      return payload.username;
+    }
+  };
+
+  auth.register = function(user){
+    return $http.post('/register', user).success(function(data){
+      auth.saveToken(data.token);
+    });
+  };
 
 
-auth.logIn = function(user){
-  return $http.post('/login', user).success(function(data){
-    auth.saveToken(data.token);
-  });
-};
+  auth.logIn = function(user){
+    return $http.post('/login', user).success(function(data){
+      auth.saveToken(data.token);
+    });
+  };
 
-auth.logOut = function(){
-  $window.localStorage.removeItem('dreadit-token');
-};
+  auth.logOut = function(){
+    $window.localStorage.removeItem('dreadit-token');
+  };
 
 
 
-return auth;
+  return auth;
 }])
 
 
 
 .controller('AuthCtrl', [
-'$scope',
-'$state',
-'auth',
-function($scope, $state, auth){
-  $scope.user = {};
+  '$scope',
+  '$state',
+  'auth',
+  function($scope, $state, auth){
+    $scope.user = {};
 
-  $scope.register = function(){
-    auth.register($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-      $state.go('home');
-    });
-  };
+    $scope.register = function(){
+      auth.register($scope.user).error(function(error){
+        $scope.error = error;
+      }).then(function(){
+        $state.go('home');
+      });
+    };
 
-  $scope.logIn = function(){
-    auth.logIn($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-      $state.go('home');
-    });
-  };
-}])
+    $scope.logIn = function(){
+      auth.logIn($scope.user).error(function(error){
+        $scope.error = error;
+      }).then(function(){
+        $state.go('home');
+      });
+    };
+  }])
 
 
 .controller('NavCtrl', [
-'$scope',
-'auth',
-function($scope, auth){
-  $scope.isLoggedIn = auth.isLoggedIn;
-  $scope.currentUser = auth.currentUser;
-  $scope.logOut = auth.logOut;
-}]);
+  '$scope',
+  'auth',
+  function($scope, auth){
+    $scope.isLoggedIn = auth.isLoggedIn;
+    $scope.currentUser = auth.currentUser;
+    $scope.logOut = auth.logOut;
+  }]);
 
 
 app.factory('posts', ['$http', 'auth', function($http, auth){
@@ -180,7 +181,7 @@ app.factory('posts', ['$http', 'auth', function($http, auth){
   o.addComment = function(id, comment) {
     return $http.post('/posts/' + id + '/comments', comment, {
       headers: {Authorization: 'Bearer '+auth.getToken()}
-      });
+    });
   };
 
   o.upvoteComment = function (post, comment) {
@@ -219,6 +220,7 @@ app.controller('MainCtrl', [
     };
 
   }])
+
 app.controller('PostsCtrl', [
   '$scope',
   '$stateParams',
@@ -241,7 +243,6 @@ app.controller('PostsCtrl', [
     $scope.incrementUpvotes = function(comment) {
       posts.upvoteComment(post, comment);
     };
-
   }]);
 
 
